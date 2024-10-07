@@ -13,6 +13,7 @@ namespace VehicleComponents.Sensors
         public float depth;
         private WaterQueryModel _waterModel;
         private bool headerWritten = false;
+        public float variance = 0.001f;
 
         void Start()
         {
@@ -42,8 +43,18 @@ namespace VehicleComponents.Sensors
                 // Debug.Log("y: " + transform.position.y);
                 depth = -(waterSurfaceLevel - transform.position.y);
             }
-
+            //Add gaussian noise
+            float noise = GenerateGaussianNoise(0f, variance);
+            depth = depth*(1 + noise);
             return true;
+        } 
+
+        private float GenerateGaussianNoise(float mean = 0f, float stdDev = 1f)
+        {
+            float u1 = 1.0f - Random.value;
+            float u2 = 1.0f - Random.value;
+            float randStdNormal = Mathf.Sqrt(-2.0f * Mathf.Log(u1)) * Mathf.Sin(2.0f * Mathf.PI * u2);
+            return mean + stdDev * randStdNormal;
         } 
     }
 }
