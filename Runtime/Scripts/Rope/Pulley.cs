@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 using Force;
@@ -109,8 +107,6 @@ namespace Rope
             };
             joint.linearLimit = jointLimit;
         }
-
-
 
         void Start()
         {
