@@ -10,9 +10,9 @@ GameObject:
   m_Component:
   - component: {fileID: 2970021653359921310}
   - component: {fileID: 1662493632097492073}
-  - component: {fileID: 3062139818935489222}
+  - component: {fileID: 261061624273665792}
   m_Layer: 0
-  m_Name: ROSSingletons
+  m_Name: ROSClock
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -48,7 +48,7 @@ MonoBehaviour:
   m_ClockMode: 0
   m_LastSetClockMode: 0
   m_PublishRateHz: 100
---- !u!114 &3062139818935489222
+--- !u!114 &261061624273665792
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
