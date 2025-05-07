@@ -10,7 +10,7 @@ namespace SmarcGUI.MissionPlanning.Params
     {
         [Header("AuvDepthPointGUI")]
         public TMP_InputField LatField;
-        public TMP_InputField LonField, DepthField, MinAltitudeField, RpmField, TimeoutField;
+        public TMP_InputField LonField, TargetDepthField, MinAltitudeField, RpmField, TimeoutField;
 
         GlobalReferencePoint globalReferencePoint;
 
@@ -37,15 +37,15 @@ namespace SmarcGUI.MissionPlanning.Params
             }
         }
 
-        public float depth
+        public float target_depth
         {
-            get { return ((AuvDepthPoint)paramValue).depth; }
+            get { return ((AuvDepthPoint)paramValue).target_depth; }
             set
             {
                 var d = (AuvDepthPoint)paramValue;
-                d.depth = value;
+                d.target_depth = value;
                 paramValue = d;
-                DepthField.text = value.ToString();
+                TargetDepthField.text = value.ToString();
                 NotifyPathChange();
             }
         }
@@ -105,6 +105,10 @@ namespace SmarcGUI.MissionPlanning.Params
                     var previousGp = (AuvDepthPoint)paramsList[ParamIndex - 1];
                     latitude = previousGp.latitude;
                     longitude = previousGp.longitude;
+                    target_depth = previousGp.target_depth;
+                    min_altitude = previousGp.min_altitude;
+                    rpm = previousGp.rpm;
+                    timeout = previousGp.timeout;
                     guiState.Log("New LatLon set to previous.");
                 }
                 // if there is no previous geo point, set it to where the camera is looking at
@@ -118,26 +122,26 @@ namespace SmarcGUI.MissionPlanning.Params
                 }
             }
 
-            if(depth == 0) depth = -1;
+            if(target_depth == 0) target_depth = -1;
             if(min_altitude == 0) min_altitude = 1;
 
             LatField.text = latitude.ToString();
             LonField.text = longitude.ToString();
-            DepthField.text = depth.ToString();
+            TargetDepthField.text = target_depth.ToString();
             MinAltitudeField.text = min_altitude.ToString();
             RpmField.text = rpm.ToString();
             TimeoutField.text = timeout.ToString();
 
             LatField.onEndEdit.AddListener(OnLatChanged);
             LonField.onEndEdit.AddListener(OnLonChanged);
-            DepthField.onEndEdit.AddListener(OnDepthChanged);
+            TargetDepthField.onEndEdit.AddListener(OnDepthChanged);
             MinAltitudeField.onEndEdit.AddListener(OnMinAltitudeChanged);
             RpmField.onEndEdit.AddListener(OnRpmChanged);
             TimeoutField.onEndEdit.AddListener(OnTimeoutChanged);
 
             fields.Add(LatField);
             fields.Add(LonField);
-            fields.Add(DepthField);
+            fields.Add(TargetDepthField);
             fields.Add(MinAltitudeField);
             fields.Add(RpmField);
             fields.Add(TimeoutField);
@@ -172,11 +176,11 @@ namespace SmarcGUI.MissionPlanning.Params
 
         void OnDepthChanged(string s)
         {
-            try {depth = float.Parse(s);}
+            try {target_depth = float.Parse(s);}
             catch
             {
                 guiState.Log("Invalid depth value");
-                OnDepthChanged(depth.ToString());
+                OnDepthChanged(target_depth.ToString());
                 return;
             }
             NotifyPathChange();
@@ -235,12 +239,17 @@ namespace SmarcGUI.MissionPlanning.Params
 
         public float GetY()
         {
-            return -depth;
+            return -target_depth;
+        }
+
+        public float GetYReference()
+        {
+            return 0;
         }
 
         public void SetY(float y)
         {
-            depth = -y;
+            target_depth = -y;
         }
 
     }

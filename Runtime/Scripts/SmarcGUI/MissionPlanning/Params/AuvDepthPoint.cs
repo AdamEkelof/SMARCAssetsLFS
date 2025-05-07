@@ -7,7 +7,7 @@ namespace SmarcGUI.MissionPlanning.Params
     {
         public double latitude{get; set;}
         public double longitude{get; set;}
-        public float depth{get; set;}
+        public float target_depth{get; set;}
         public float min_altitude{get; set;}
         public float rpm{get; set;}
         public float timeout{get; set;}
@@ -22,7 +22,7 @@ namespace SmarcGUI.MissionPlanning.Params
             var ll = JsonConvert.DeserializeObject<AuvDepthPoint>(json);
             latitude = ll.latitude;
             longitude = ll.longitude;
-            depth = ll.depth;
+            target_depth = ll.target_depth;
             min_altitude = ll.min_altitude;
             rpm = ll.rpm;
             timeout = ll.timeout;

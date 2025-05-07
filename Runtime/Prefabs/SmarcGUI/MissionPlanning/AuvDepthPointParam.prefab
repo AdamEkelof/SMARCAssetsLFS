@@ -2758,7 +2758,7 @@ MonoBehaviour:
   Label: {fileID: 954035344788294035}
   LatField: {fileID: 5860177524517708484}
   LonField: {fileID: 5151769899253396062}
-  DepthField: {fileID: 2624071415871969676}
+  TargetDepthField: {fileID: 2624071415871969676}
   MinAltitudeField: {fileID: 7200316454244156284}
   RpmField: {fileID: 7578671162651827226}
   TimeoutField: {fileID: 1800798093667412258}
