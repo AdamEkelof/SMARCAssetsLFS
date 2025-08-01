@@ -1,5 +1,6 @@
 using UnityEngine;
 using ROSMessage = Unity.Robotics.ROSTCPConnector.MessageGeneration.Message;
+using RosMessageTypes.PsdkInterfaces;
 using DefaultNamespace;
 
 using VehicleComponents.ROS.Core;
