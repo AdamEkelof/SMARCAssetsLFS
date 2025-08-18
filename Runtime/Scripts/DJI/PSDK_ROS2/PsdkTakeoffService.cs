@@ -16,7 +16,7 @@ namespace M350.PSDK_ROS2
 
         bool registered = false;
         public float takeoffAlt = 5; //Actual drone takes off to 2 meters, but thsi ensures that one can have it move around succesfully and gives some error on height
-        public float takeoffError = 1f;
+        public float takeoffError = .1f;
         DJIController controller = null;
 
 
@@ -78,6 +78,8 @@ namespace M350.PSDK_ROS2
                 Debug.Log("Controller not Null");
                 if(controller.controllerType == (dji.ControllerType)0 && controller.position.y < takeoffAlt - takeoffError){
                     controller.isTakingOff = true;
+                    controller.isLanding = false;
+                    controller.isLanded = false;
                     Debug.Log("Setting takingOff to true");
                     controller.target_alt = takeoffAlt;
                     response.success = true;
