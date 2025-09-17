@@ -1,5 +1,5 @@
 {
-    "name": "SMARC.Main",
+    "name": "SMARC.SMARCAssets",
     "rootNamespace": "",
     "references": [
         "Unity.Robotics.ROSTCPConnector",

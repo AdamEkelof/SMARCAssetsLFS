@@ -1,8 +1,8 @@
 {
-    "name": "SMARC.Editor",
+    "name": "SMARC.SMARCAssets.Editor",
     "rootNamespace": "",
     "references": [
-        "SMARC.Main",
+        "SMARC.SMARCAssets",
         "Unity.Robotics.UrdfImporter"
     ],
     "includePlatforms": [
