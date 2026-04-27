@@ -35,7 +35,8 @@ namespace Force
         [Tooltip("Maximum force applied by buoyancy. Nice to keep things from going to space :)")]
         public float MaxBuoyancyForce = 1000f;
 
-        [Header("Underwater/Air Drag")] [Tooltip("Linear Drag applied while underwater. Sets the connected body's drag/linearDamping value when underwater. Set to -1 to use the starting drag value of the body for this.")]
+        [Header("Underwater/Air Drag")]
+        [Tooltip("Linear Drag applied while underwater. Sets the connected body's drag/linearDamping value when underwater. Set to -1 to use the starting drag value of the body for this.")]
         public float UnderwaterDrag = -1f;
 
         [Tooltip("Angular Drag applied while underwater. Sets the connected body's drag/linearDamping value when underwater. Set to -1 to use the starting drag value of the body for this.")]
@@ -54,7 +55,8 @@ namespace Force
         public float CurrentDepth;
 
 
-        [Header("Gravity")] [Tooltip("Do we over-ride the gravity of the connected body?")]
+        [Header("Gravity")]
+        [Tooltip("Do we over-ride the gravity of the connected body?")]
         public bool AddGravity = false;
 
         [Tooltip("If true, calculates center of gravity from all the ForcePoints on the body and overrides the body's centerOfMass, otherwise the centerOfMass of the connected body is used.")]
@@ -68,9 +70,11 @@ namespace Force
         public Vector3 AppliedBuoyancyForce, AppliedGravityForce;
         public bool ApplyCustomForce = false;
         public Vector3 CustomForce = Vector3.zero;
+        public bool Buggy = false;
 
 
         private MixedBody body;
+        public MixedBody Body => body;
         private WaterQueryModel waterModel;
         private FrequencyTimer waterQueryTimer;
         private ForcePoint[] allForcePoints;
@@ -105,7 +109,7 @@ namespace Force
 
             if (!body.isValid)
             {
-                Debug.LogWarning($"{gameObject.name} requires at least one of ConnectedArticulationBody or ConnectedRigidBody to be set!");
+                // Debug.LogWarning($"{gameObject.name} requires at least one of ConnectedArticulationBody or ConnectedRigidBody to be set!");
                 return;
             }
 
@@ -124,7 +128,18 @@ namespace Force
             var waterModels = FindObjectsByType<WaterQueryModel>(FindObjectsSortMode.None);
             if (waterModels.Length > 0) waterModel = waterModels[0];
 
-            allForcePoints = body.gameObject.GetComponentsInChildren<ForcePoint>();
+            //allForcePoints = body.gameObject.GetComponentsInChildren<ForcePoint>();
+            //var tag = body.gameObject.tag;
+            //allForcePoints = body.gameObject.GetComponentsInChildren<ForcePoint>()
+            //    .Where(fp => fp.Body.gameObject.CompareTag(tag))
+            //    .ToArray();
+            var tag = body.gameObject.tag;
+            allForcePoints = body.gameObject.GetComponentsInChildren<ForcePoint>()
+                .Where(fp => (fp.ConnectedArticulationBody != null && fp.ConnectedArticulationBody.gameObject.CompareTag(tag)) ||
+                             (fp.ConnectedRigidbody != null && fp.ConnectedRigidbody.gameObject.CompareTag(tag)))
+                .ToArray();
+            // Debug.Log($"[{gameObject.name}] Found {allForcePoints.Length} force points on connected body with tag {tag} for center of gravity calculations.");
+
             if (AutomaticCenterOfGravity)
             {
                 body.automaticCenterOfMass = false;
@@ -187,10 +202,18 @@ namespace Force
 
                     AppliedBuoyancyForce = ApplyForce(waterForceScale * buoyancyForce, onlyUnderWater: true);
 
+                    if (Buggy)
+                    {
+                        Debug.Log($"[{gameObject.name}] displacementMultiplier={displacementMultiplier}, " +
+                                $"buoyancyForceMag={buoyancyForceMag}, " +
+                                $"allForcePoints.Length={allForcePoints.Length}, " +
+                                $"AppliedBuoyancyForce={AppliedBuoyancyForce}");
+                        Buggy = false;
+                    }
                     if (DrawForces) Debug.DrawLine(forcePointPosition, forcePointPosition + AppliedBuoyancyForce, Color.blue, 0.1f);
                 }
 
-                // change the drag of the body to underwater if any is point is. This is a ad-hoc way to 
+                // change the drag of the body to underwater if any is point is. This is a ad-hoc way to
                 // simulate the sticktion water usually applies to objects
                 // also, some objects might need to be useful under AND over water (like ropes...)
                 // and their drag really should reflect where they are moment to moment
