@@ -28,6 +28,7 @@ namespace VehicleComponents.Actuators
         private float phase = 0f;
         private float forceX = 0f;
         private float forceY = 0f;
+        public float Phase => phase;
         public float ForceX => forceX;
         public float ForceY => forceY;
 
