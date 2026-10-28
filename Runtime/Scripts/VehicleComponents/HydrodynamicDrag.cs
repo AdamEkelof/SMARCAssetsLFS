@@ -11,8 +11,8 @@ namespace VehicleComponents
         [Header("Drag Parameters")]
         public float AreaFwd = 0f;
         public float CdFwd = 0f;
-        public float AreaRight = 0f;
-        public float CdRight = 0f;
+        public float AreaLeft = 0f;
+        public float CdLeft = 0f;
         public float AreaUp = 0f;
         public float CdUp = 0f;
 
@@ -25,57 +25,72 @@ namespace VehicleComponents
         public float KRoll = 0.3f; // This is made up and not based in reality
 
         private readonly float waterDensity = 997;
-        private Vector3 prev_vel = Vector3.zero;
+        private Vector3 prevVel = Vector3.zero; // Assumes the robot is stationary at start
 
         void FixedUpdate()
         {
-            if (Physics.simulationMode == SimulationMode.FixedUpdate) DoUpdate();
+            if (Physics.simulationMode == SimulationMode.FixedUpdate) DoUpdate(Vector3.zero);
         }
 
-        public void DoUpdate()
+        private Vector3 GetDragForce(Vector3 vel, Vector3 fwd, Vector3 left, Vector3 up)
         {
-            Vector3 vel = Body.linearVelocity;
-            Vector3 fwd = transform.right;
-            Vector3 right = transform.forward;
-            Vector3 up = transform.up;
-
-            float vFwd = Vector3.Dot(vel, fwd);
-            float vRight = Vector3.Dot(vel, right);
-            float vUp = Vector3.Dot(vel, up);
+            float velFwd = Vector3.Dot(vel, fwd);
+            float velLeft = Vector3.Dot(vel, left);
+            float velUp = Vector3.Dot(vel, up);
 
             // Mathf.Abs to remember the direction and oppose it.
-            float fDragFwd = -0.5f * waterDensity * CdFwd * AreaFwd * vFwd * Mathf.Abs(vFwd);
-            float fDragRight = -0.5f * waterDensity * CdRight * AreaRight * vRight * Mathf.Abs(vRight);
-            float fDragUp = -0.5f * waterDensity * CdUp * AreaUp * vUp * Mathf.Abs(vUp);
+            float dragFwd = -0.5f * waterDensity * CdFwd * AreaFwd * velFwd * Mathf.Abs(velFwd);
+            float dragLeft = -0.5f * waterDensity * CdLeft * AreaLeft * velLeft * Mathf.Abs(velLeft);
+            float dragUp = -0.5f * waterDensity * CdUp * AreaUp * velUp * Mathf.Abs(velUp);
 
-            Vector3 dragForce = fDragFwd * fwd + fDragRight * right + fDragUp * up;
+            Vector3 dragForce =
+                dragFwd * fwd +
+                dragLeft * left +
+                dragUp * up;
 
+            return dragForce;
+        }
+        private Vector3 GetAddedMassForce(float dt, Vector3 vel, Vector3 omega, Vector3 fwd, Vector3 left, Vector3 up)
+        {
+            Vector3 accelWorld = (vel - prevVel) / dt;
+            Vector3 accelBody = accelWorld - Vector3.Cross(omega, vel);
+
+            float accelFwd = Vector3.Dot(accelBody, fwd);
+            float accelLeft = Vector3.Dot(accelBody, left);
+            float accelUp = Vector3.Dot(accelBody, up);
+
+            Vector3 addedMassForce =
+                -(AMx * accelFwd * fwd +
+                AMy * accelLeft * left +
+                AMz * accelUp * up);
+
+            return addedMassForce;
+        }
+
+        public void DoUpdate(Vector3 disturbanceForce)
+        {
             float dt = Time.fixedDeltaTime;
-            Vector3 accel = (vel - prev_vel) / dt;
-            float aFwd = Vector3.Dot(accel, fwd);
-            float aRight = Vector3.Dot(accel, right);
-            float aUp = Vector3.Dot(accel, up);
-            // float Xudot = 0.1f * Body.mass;
-            // float Yvdot = 0.5f * Body.mass;
-            // float Zwdot = Yvdot;
-            // Vector3 aMForce = -(Xudot * aFwd * fwd + Yvdot * aRight * right + Zwdot * aUp * up);
-            Vector3 aMForce = -(AMx * aFwd * fwd + AMy * aRight * right + AMz * aUp * up);
+            Vector3 vel = Body.linearVelocity;
+            Vector3 omega = Body.angularVelocity;
 
-            Vector3 totalForce = dragForce + aMForce;
-            // Debug.Log($"fwd:{transform.forward}, right:{transform.right}, up:{transform.up}");
-            // Debug.Log($"{gameObject.name} velocity: {vel}, dragForce: {totalForce}, local vel: {vFwd}, {vRight}, {vUp}");
-            Body.AddForce(totalForce);
-            prev_vel = vel;
+            // X is forward, Y is left, Z is up.
+            Vector3 fwd = transform.right;
+            Vector3 left = transform.forward;
+            Vector3 up = transform.up;
 
-            Vector3 angVel = Body.angularVelocity;
-            float wRoll = Vector3.Dot(angVel, fwd);
-            Body.AddTorque(-KRoll * wRoll * fwd);
+            Vector3 dragForce = GetDragForce(vel, fwd, left, up);
+            Vector3 addedMassForce = GetAddedMassForce(dt, vel, omega, fwd, left, up);
 
+            Body.AddForce(dragForce + addedMassForce + disturbanceForce);
+            prevVel = vel;
+
+            float rollRate = Vector3.Dot(omega, fwd);
+            Body.AddTorque(-KRoll * rollRate * fwd);
         }
 
         public void Reset()
         {
-            prev_vel = Vector3.zero;
+            prevVel = Vector3.zero;
         }
     }
 }
