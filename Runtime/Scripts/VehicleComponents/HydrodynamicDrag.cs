@@ -80,6 +80,7 @@ namespace VehicleComponents
 
             Vector3 dragForce = GetDragForce(vel, fwd, left, up);
             Vector3 addedMassForce = GetAddedMassForce(dt, vel, omega, fwd, left, up);
+            Debug.Log($"Drag: {dragForce}, Added Mass: {addedMassForce}, Disturbance: {disturbanceForce}");
 
             Body.AddForce(dragForce + addedMassForce + disturbanceForce);
             prevVel = vel;
