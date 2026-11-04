@@ -25,9 +25,9 @@ namespace VehicleComponents
         public float KRoll = 0.3f; // This is made up and not based in reality
 
         private readonly float waterDensity = 997;
-        private Vector3 prevVel = Vector3.zero; // Assumes the robot is stationary at start
+        // private Vector3 prevVel = Vector3.zero; // Assumes the robot is stationary at start
 
-        private Vector3 Forces()
+        private void AddForces()
         {
             var vel  = Body.linearVelocity;
             var fwd  = transform.right;
@@ -43,6 +43,7 @@ namespace VehicleComponents
                 CdLeft * AreaLeft * velL * Mathf.Abs(velL) * left +
                 CdUp   * AreaUp   * velU * Mathf.Abs(velU) * up
             );
+            Body.AddForce(dragForce);
 
             // INFO: This must be run last since the forces need to be added.
             var forces = Body.GetAccumulatedForce(); // If run first forces = 0
@@ -59,17 +60,16 @@ namespace VehicleComponents
                 AMy / (m + AMy) * forceL * left +
                 AMz / (m + AMz) * forceU * up
             );
-
-            return dragForce + addedMassForce;
+            Body.AddForce(addedMassForce);
         }
 
-        private Vector3 Torque()
+        private void AddTorque()
         {
             var omega = Body.angularVelocity;
             var fwd   = transform.right;
 
             var rollRate = Vector3.Dot(omega, fwd);
-            return -KRoll * rollRate * fwd;
+            Body.AddTorque(-KRoll * rollRate * fwd);
         }
 
 //         private Vector3 GetDragForce(Vector3 vel, Vector3 fwd, Vector3 left, Vector3 up)
@@ -109,11 +109,9 @@ namespace VehicleComponents
 
         public void DoUpdate(Vector3 disturbanceForce)
         {
-            var force  = Forces();
-            var torque = Torque();
-
-            Body.AddForce(force + disturbanceForce);
-            Body.AddTorque(torque);
+            Body.AddForce(disturbanceForce);
+            AddForces();
+            AddTorque();
 //             float dt = Time.fixedDeltaTime;
 //             Vector3 vel = Body.linearVelocity;
 //             Vector3 omega = Body.angularVelocity;
@@ -136,7 +134,7 @@ namespace VehicleComponents
 
         public void Reset()
         {
-            prevVel = Vector3.zero;
+            // prevVel = Vector3.zero;
         }
     }
 }
